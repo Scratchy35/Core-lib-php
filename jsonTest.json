@@ -1,0 +1,20 @@
+[
+  {
+    "route": "/helloworld/",
+    "fileToInclude": "\\helloworld.html",
+    "action": "",
+    "method": "osef",
+    "permission": "osef"
+  },
+  {
+    "route": "/test.html",
+    "fileToInclude": "\\Test.php",
+    "action": "Controller\\Test\\Test->test",
+    "method":
+    {
+      "GET" : ["enculer"],
+      "POST" : []
+    },
+    "permission": "osef"
+  }
+]
