@@ -13,7 +13,7 @@ class InternalServerErrorException extends HttpErrorException
 {
     public function __construct($message = "", $code = 0, Exception $previous = null)
     {
-        parent::$errorCode = 500;
+        $this->errorCode =  500;
         parent::__construct($message,$code,$previous);
     }
 }

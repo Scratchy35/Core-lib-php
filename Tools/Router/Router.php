@@ -65,7 +65,7 @@ final class Router
         $routeQueried = explode("?",$_SERVER['REQUEST_URI']);
         $routeIndex = array_search($routeQueried[0],array_keys($this->_routes));
         $routeObject = array_values($this->_routes)[$routeIndex];
-        if (is_null($routeObject) || !$routeObject instanceof Route) {
+        if ($routeIndex === false || is_null($routeObject) || !$routeObject instanceof Route) {
             throw new NotFoundException("Failed to find route, maybe redirect to 404");
         } else {
             $uriParameter = isset($routeQueried[1])? $routeQueried[1] : "";

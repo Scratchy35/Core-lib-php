@@ -3,8 +3,8 @@
     "route": "/helloworld/",
     "fileToInclude": "\\helloworld.html",
     "action": "",
-    "method": "osef",
-    "permission": "osef"
+    "method": "test",
+    "permission": "test"
   },
   {
     "route": "/test.html",
@@ -12,9 +12,9 @@
     "action": "Controller\\Test\\Test->test",
     "method":
     {
-      "GET" : ["enculer"],
+      "GET" : ["test"],
       "POST" : []
     },
-    "permission": "osef"
+    "permission": "test"
   }
 ]

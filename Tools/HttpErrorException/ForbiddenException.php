@@ -14,7 +14,7 @@ final class ForbiddenException extends HttpErrorException
 
     public function __construct($message = "", $code = 0, Exception $previous = null)
     {
-        parent::$errorCode = 403;
+        $this->errorCode = 403;
         parent::__construct($message,$code,$previous);
     }
 }

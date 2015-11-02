@@ -12,6 +12,14 @@ abstract class HttpErrorException extends \Exception
 {
     protected $errorCode;
 
+    /**
+     * @return int
+     */
+    public function getErrorCode()
+    {
+        return $this->errorCode;
+    }
+
     public function __construct($message = "", $code = 0, Exception $previous = null)
     {
         parent::__construct($message,$code,$previous);

@@ -148,7 +148,7 @@ class SplClassLoader
     public function loadClass($className)
     {
         $loaded = false;
-        for ($i = 0; $i < count($this->_namespace) || !$loaded; $i++) {
+        for ($i = 0; $i < count($this->_namespace) && !$loaded; $i++) {
             $ns = $this->_namespace[$i];
             $includePath = $this->_includePath[$i];
             if (null === $ns || $ns . $this->_namespaceSeparator === substr($className, 0, strlen($ns . $this->_namespaceSeparator))) {

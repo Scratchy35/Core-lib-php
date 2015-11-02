@@ -4,6 +4,7 @@ namespace Tools\Router;
 
 use Tools\HttpErrorException\ForbiddenException;
 use Tools\HttpErrorException\UnauthorizedException;
+//use Tools\HttpErrorException\
 /**
  * Created by PhpStorm.
  * User: Scratchy
@@ -47,6 +48,8 @@ final class Route
     private $_postParameterName;
 
 
+    private $_securedInput;
+
     /**
      * Route constructor.
      * @param $fileToInclude
@@ -56,8 +59,9 @@ final class Route
      * @param $uriParameterName
      * @param $getParameterName
      * @param $postParameterName
+     * @param $securedInput
      */
-    public function __construct($fileToInclude, $classToInclude, $methodToCall, $permission, $uriParameterName = "", $getParameterName = array(), $postParameterName = array())
+    public function __construct($fileToInclude, $classToInclude, $methodToCall, $permission, $uriParameterName = "", $getParameterName = array(), $postParameterName = array(),$securedInput = false)
     {
         $this->_fileToInclude = $fileToInclude;
         $this->_classToInclude = $classToInclude;
@@ -66,7 +70,7 @@ final class Route
         $this->_uriParameterName = $uriParameterName;
         $this->_getParameterName = $getParameterName;
         $this->_postParameterName = $postParameterName;
-
+        $this->_securedInput = $securedInput;
     }
 
     /**
