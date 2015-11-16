@@ -3,8 +3,10 @@
 namespace Tools\Router;
 
 use Tools\HttpErrorException\ForbiddenException;
+use Tools\HttpErrorException\HttpErrorException;
 use Tools\HttpErrorException\UnauthorizedException;
-//use Tools\HttpErrorException\
+use Tools\HttpErrorException\InternalServerErrorException;
+
 /**
  * Created by PhpStorm.
  * User: Scratchy
@@ -61,7 +63,7 @@ final class Route
      * @param $postParameterName
      * @param $securedInput
      */
-    public function __construct($fileToInclude, $classToInclude, $methodToCall, $permission, $uriParameterName = "", $getParameterName = array(), $postParameterName = array(),$securedInput = false)
+    public function __construct($fileToInclude, $classToInclude, $methodToCall, $permission, $uriParameterName = "", $getParameterName = array(), $postParameterName = array(), $securedInput = false)
     {
         $this->_fileToInclude = $fileToInclude;
         $this->_classToInclude = $classToInclude;
@@ -75,33 +77,37 @@ final class Route
 
     /**
      * @param $uriParameter
-     * @throws Exception
+     * @throws HttpErrorException
+     * @throws \Exception
      */
     public function build($uriParameter)
     {
-        if ($this->getPermission()) {
-
-            if (!empty($this->_classToInclude)) {
-                $class = null;
-                try {
-                    $this->callMethod($uriParameter);
-                }
-                catch(Exception $e)
-                {
-                    throw new Exception("Failed to call the method $this->_methodToCall in class $this->_classToInclude");
-                }
-            } else {
-                include $this->_fileToInclude;
+        try {
+            $this->isPermitted();
+        } catch (HttpErrorException $authorizationException) {
+            throw $authorizationException;
+        }
+        if (!empty($this->_classToInclude)) {
+            $class = null;
+            try {
+                $this->callMethod($uriParameter);
+            } catch (HttpErrorException $httpError) {
+                throw $httpError;
+            } catch (Exception $e) {
+                throw new InternalServerErrorException("Failed to call the method $this->_methodToCall in class $this->_classToInclude");
             }
         } else {
-            throw new Exception("Failed to find route, maybe redirect to 401");
+            include $this->_fileToInclude;
         }
     }
 
-    private function getPermission()
+    /**
+     * @throws ForbiddenException
+     * @throws UnauthorizedException
+     */
+    private function isPermitted()
     {
         // TODO : initialiser si besoin est la session et les permissions
-        return true;
     }
 
     /**

@@ -18,7 +18,6 @@ final class Router
 
     private function __construct()
     {
-        //include '/Router/Route.php';
         $this->decodeJson();
     }
 
@@ -39,7 +38,7 @@ final class Router
         $json = file_get_contents(getcwd().self::PATH_JSON_CONF);
         $confObject = json_decode($json);
         if (is_null($confObject) || !is_array($confObject)) {
-            throw new Exception("The file " . self::PATH_JSON_CONF . " can't be convert, it's a not a valid JSON");
+            throw new InternalServerErrorException("The file " . self::PATH_JSON_CONF . " can't be convert, it's a not a valid JSON");
         }
         foreach ($confObject as $routeJson) {
             $action = explode("->",$routeJson->action);
@@ -66,7 +65,7 @@ final class Router
         $routeIndex = array_search($routeQueried[0],array_keys($this->_routes));
         $routeObject = array_values($this->_routes)[$routeIndex];
         if ($routeIndex === false || is_null($routeObject) || !$routeObject instanceof Route) {
-            throw new NotFoundException("Failed to find route, maybe redirect to 404");
+            throw new NotFoundException("Failed to find resource");
         } else {
             $uriParameter = isset($routeQueried[1])? $routeQueried[1] : "";
             $routeObject->build($uriParameter);
