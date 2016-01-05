@@ -12,7 +12,7 @@ use Tools\HttpErrorException\InternalServerErrorException;
  */
 final class Router
 {
-    const PATH_JSON_CONF = '/jsonTest.json';
+    const PATH_JSON_CONF = '/conf.json';
     private static $_instance;
     private $_routes;
 
