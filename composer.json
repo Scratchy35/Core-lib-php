@@ -14,6 +14,6 @@
     "apache/log4php": "2.3.0"
   },
   "autoload" : {
-    "psr-4" : {"Tools\\":"Tools/"}
+    "psr-4" : {"Tools\\":"Tools/","Controller\\":"Controller/"}
   }
 }
