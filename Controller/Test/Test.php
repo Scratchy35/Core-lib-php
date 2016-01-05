@@ -13,8 +13,10 @@ class Test
     {
 
     }
-    public function test($enculer)
+    public function test($test)
     {
-        echo "tralalala/$enculer";
+        $css =  "/Public/common/main.css";
+        echo "<link href='$css' rel='stylesheet' type='text/css'>";
+        echo "tralalala/<h1>$test</h1>";
     }
 }
