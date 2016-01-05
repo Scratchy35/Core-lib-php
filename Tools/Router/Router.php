@@ -12,7 +12,7 @@ use Tools\HttpErrorException\InternalServerErrorException;
  */
 final class Router
 {
-    const PATH_JSON_CONF = '\jsonTest.json';
+    const PATH_JSON_CONF = '/jsonTest.json';
     private static $_instance;
     private $_routes;
 
@@ -32,7 +32,11 @@ final class Router
         }
         return self::$_instance;
     }
+    
 
+    /**
+     * Function for reading conf file and  iniatilize all routes
+     */
     private function decodeJson()
     {
         $json = file_get_contents(getcwd().self::PATH_JSON_CONF);
@@ -59,6 +63,9 @@ final class Router
         }
     }
 
+    /**
+     * Function for using the route corresponding to conf entry
+     **/ 
     public function routeTo()
     {
         $routeQueried = explode("?",$_SERVER['REQUEST_URI']);
