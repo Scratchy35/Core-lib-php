@@ -114,7 +114,7 @@ final class Route
      *
      * @param $uriParameter
      */
-    private function callMethod($uriParameter)
+    private function callMethod($uriParameter = null)
     {
         $controllerMethodReflection = new \ReflectionMethod($this->_classToInclude, $this->_methodToCall);
         $parameterFunc = array();
