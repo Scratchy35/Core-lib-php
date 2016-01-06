@@ -15,7 +15,7 @@ class Test
     }
     public function test($test)
     {
-        $css =  "/Public/common/main.css";
+        $css =  "/Public/common/css/main.css";
         echo "<link href='$css' rel='stylesheet' type='text/css'>";
         echo "tralalala/<h1>$test</h1>";
     }
