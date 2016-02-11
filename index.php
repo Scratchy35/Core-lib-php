@@ -9,6 +9,7 @@ $loader = require __DIR__ . '/vendor/autoload.php';
 use Tools\Router\Router;
 use Tools\HttpErrorException\HttpErrorException;
 
+//TODO: Authentification ici
 
 $router = Router::_getInstance();
 try
@@ -18,6 +19,7 @@ try
 catch (HttpErrorException $httpError)
 {
     http_response_code($httpError->getErrorCode());
-    error_log(implode('\n',$httpError->getTrace()));
+    //error_log(implode('\n',$httpError->getTrace()));
+    throw $httpError;
 }
 
