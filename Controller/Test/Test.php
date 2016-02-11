@@ -18,5 +18,18 @@ class Test
         $css =  "/Public/common/css/main.css";
         echo "<link href='$css' rel='stylesheet' type='text/css'>";
         echo "tralalala/<h1>$test</h1>";
+        $max =4 ;
+        define('MAX',$max);
+        echo MAX.'<br>';
+        if(8 & 1)
+            echo 'ok';
+        else
+            echo "c'est mort";
+//        for($i = 0 ; $i< $max ;$i++ )
+//        {
+//            echo pow(2,$i);
+//
+//            define($permsName,$i);
+//        }
     }
 }

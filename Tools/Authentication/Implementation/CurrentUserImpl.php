@@ -9,7 +9,35 @@
 namespace Tools\Authentication;
 
 
-class CurrentUserImpl
+class CurrentUserImpl implements ICurrentUser
 {
+    private static $_instance;
 
+    private function __construct()
+    {
+    }
+
+    public static function _getInstance()
+    {
+        if (is_null(self::$_instance)) {
+            self::$_instance = new CurrentUserImpl();
+        }
+        return self::$_instance;
+    }
+
+    /**
+     * @return array
+     */
+    public function getPermissions()
+    {
+        // TODO: Implement getPermissions() method.
+    }
+
+    /**
+     * @return String
+     */
+    public function getLogin()
+    {
+        // TODO: Implement getLogin() method.
+    }
 }

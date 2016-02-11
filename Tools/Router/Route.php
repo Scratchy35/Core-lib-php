@@ -6,6 +6,7 @@ use Tools\HttpErrorException\ForbiddenException;
 use Tools\HttpErrorException\HttpErrorException;
 use Tools\HttpErrorException\UnauthorizedException;
 use Tools\HttpErrorException\InternalServerErrorException;
+use Tools\Authentication\AuthenticationImpl;
 
 /**
  * Created by PhpStorm.
@@ -29,9 +30,9 @@ final class Route
      * @var string method to call
      */
     private $_methodToCall;
-    /**
-     * @var string Group authorized to access a URI
-     */
+//    /**
+//     * @var array Groups authorized to access a URI
+//     */
     private $_permission;
 
     /**
@@ -56,7 +57,7 @@ final class Route
      * Route constructor.
      * @param $fileToInclude
      * @param $classToInclude
-     * @param $permission
+     * @param array $permission
      * @param $methodToCall
      * @param $uriParameterName
      * @param $getParameterName
@@ -73,6 +74,12 @@ final class Route
         $this->_getParameterName = $getParameterName;
         $this->_postParameterName = $postParameterName;
         $this->_securedInput = $securedInput;
+//        for($i = 0 ; $i< count($permission);$i++ )
+//        {
+//            pow(2,$i);
+//            $permsName = strtoupper($permission[$i]);
+//            define($permsName,$i);
+//        }
     }
 
     /**

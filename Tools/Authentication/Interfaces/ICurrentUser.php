@@ -9,7 +9,17 @@
 namespace Tools\Authentication;
 
 
-class ICurrentUser
+interface ICurrentUser
 {
+    /**
+     * @return array
+     */
+    public function getPermissions();
+
+    /**
+     * @return String
+     */
+    public function getLogin();
+
 
 }
