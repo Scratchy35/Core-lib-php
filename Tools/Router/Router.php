@@ -46,7 +46,7 @@ final class Router
         }
         foreach ($confObject as $routeJson) {
             $action = explode("->",$routeJson->action);
-            if((preg_match('/\/((?:\w+\/)*(?:\w+.html)?)(?:\{(\w+)\})?/', $routeJson->route, $matches)) === 0)
+            if((preg_match('/\/((?:\w+\/)*(?:\w+(?:\.html)?)?)(?:\{(\w+)\})?/', $routeJson->route, $matches)) === 0)
             {
                 throw new InternalServerErrorException("Route was misformed : $routeJson->route");
             }

@@ -7,7 +7,7 @@
     "permission": "test"
   },
   {
-    "route": "/test.html",
+    "route": "/test",
     "fileToInclude": "\\Test.php",
     "action": "Controller\\Test\\Test->test",
     "method":
