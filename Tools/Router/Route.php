@@ -70,16 +70,18 @@ final class Route
 
     /**
      * Route constructor.
+     * @param $uri string uri of the route
      * @param $fileToInclude string file to include in case of not OOP paradigm
      * @param $classToInclude string class to include
-     * @param $permission string[] permission for this routes
      * @param $methodToCall string method to call in the class
+     * @param $permission string[] permission for this routes
      * @param $uriParameterName string uri parameter for the route
-     * @param $getParameterName string[] get parameter for the route
-     * @param $postParameterName string[] post parameter for the route
+     * @param $methodHttp string method http use to request the route , by default GET
+     * @param $getParameterName array get parameter for the route
+     * @param $postParameterName array post parameter for the route
      * @param $securedInput bool boolean to check if input have to be secured
      */
-    public function __construct($uri,$fileToInclude, $classToInclude, $methodToCall, $permission, $uriParameterName = "",$methodHttp, $getParameterName = array(), $postParameterName = array(), $securedInput = false)
+    public function __construct($uri,$fileToInclude, $classToInclude, $methodToCall, $permission, $uriParameterName = "",$methodHttp = "GET", $getParameterName = array(), $postParameterName = array(), $securedInput = false)
     {
         $this->_uri = $uri;
         $this->_fileToInclude = $fileToInclude;
@@ -134,11 +136,12 @@ final class Route
 //        if((int)$currentUser->getPermissions() & ){
 //
 //        }
+        return true;
     }
 
     /**
      * Call of the method
-     * @param $uriParameter string
+     * @param $uriParameter
      */
     private function callMethod($uriParameter = null)
     {
@@ -169,7 +172,8 @@ final class Route
     }
 
     public function equalsRoute($method,$url){
-        return $method == $this->_methodHttp && $url == $this->_uri;
+        return $method == $this->_methodHttp && $url == $this->_uri
+        && array_keys($_GET) == $this->_getParameterName && array_keys($_POST) == $this->_postParameterName;
     }
 }
 

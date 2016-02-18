@@ -64,13 +64,21 @@ final class Router {
             $methodHttp = "GET";
             $permission = isset($routeJson->permission) ? $routeJson->permission : array();
 
-            if(isset($routeJson->method) && is_array($routeJson->method) && isset($routeJson->method->GET)){
+            //test if there is some get parameter declare in route
+            if(isset($routeJson->method) && is_object($routeJson->method)
+                && isset($routeJson->method->GET) && is_array($routeJson->method->GET)){
                 $getParameter =  $routeJson->method->GET ;
             }
-            if(isset($routeJson->method) && is_array($routeJson->method) && isset($routeJson->method->POST)){
+
+            //test if there is some post parameter declare in route, if some post parameter is found
+            // it assumes that the route method is POST
+            if(isset($routeJson->method) && is_object($routeJson->method)
+                && isset($routeJson->method->POST) && is_array($routeJson->method->POST)){
                 $postParameter = $routeJson->method->POST ;
                 $methodHttp = "POST";
             }
+
+            //test if at least a method is declare in route, otherwise the default will be GET
             if(isset($routeJson->method) && is_string($routeJson->method)){
                 $methodHttp = $routeJson->method;
             }
@@ -102,9 +110,8 @@ final class Router {
     }
 
     /**
-     * function to see if a route is equal to an uri and its http method
-     * @param Route $route given route to check
-     * @return boolean check whether the route given is equals to the uri requested or not
+     * function to see if a route is equal to an url and a method
+     * @param Route $route
      */
     private function compare($route){
         $method = $_SERVER['REQUEST_METHOD'];
