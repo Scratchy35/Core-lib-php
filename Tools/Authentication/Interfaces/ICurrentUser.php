@@ -6,7 +6,7 @@
  * Time: 11:25
  */
 
-namespace Tools\Authentication;
+namespace Tools\Authentication\Interfaces;
 
 
 interface ICurrentUser
@@ -17,9 +17,19 @@ interface ICurrentUser
     public function getPermissions();
 
     /**
-     * @return String
+     * @return string
      */
     public function getLogin();
 
 
+    /**
+     * @param $permissions
+     * @return string
+     */
+    public function setPermissions($permissions);
+
+    /**
+     * @param string $login
+     */
+    public function setLogin($login);
 }
