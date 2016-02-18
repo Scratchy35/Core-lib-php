@@ -4,20 +4,24 @@ namespace Tools\Router;
 
 use Tools\HttpErrorException\NotFoundException;
 use Tools\HttpErrorException\InternalServerErrorException;
+
 /**
  * Created by PhpStorm.
  * User: Scratchy
  * Date: 24/10/2015
  * Time: 19:27
  */
-final class Router
-{
-    const PATH_JSON_CONF = '/conf.json';
+final class Router {
+
+    const PATH_JSON_CONF = '/Configuration/Route.json';
+
     private static $_instance;
     private $_routes;
 
-    private function __construct()
-    {
+    /**
+     * Router constructor.
+     */
+    private function __construct() {
         $this->decodeJson();
     }
 
@@ -25,57 +29,87 @@ final class Router
      * Singleton of Router
      * @return Router
      */
-    public static function _getInstance()
-    {
+    public static function _getInstance() {
         if (is_null(self::$_instance)) {
             self::$_instance = new Router();
         }
         return self::$_instance;
     }
-    
 
     /**
      * Function for reading conf file and  iniatilize all routes
      */
-    private function decodeJson()
-    {
-        $json = file_get_contents(getcwd().self::PATH_JSON_CONF);
+    private function decodeJson() {
+        //reading json conf file
+        $json = file_get_contents(getcwd() . self::PATH_JSON_CONF);
         $confObject = json_decode($json);
         if (is_null($confObject) || !is_array($confObject)) {
             throw new InternalServerErrorException("The file " . self::PATH_JSON_CONF . " can't be convert, it's a not a valid JSON");
         }
+
+        //iterate over routes in json conf
         foreach ($confObject as $routeJson) {
-            $action = explode("->",$routeJson->action);
-            if((preg_match('/\/((?:\w+\/)*(?:\w+(?:\.html)?)?)(?:\{(\w+)\})?/', $routeJson->route, $matches)) === 0)
-            {
+            //throw exception if url doesn't match regexp
+            if ((preg_match('/\/((?:\w+\/)*(?:\w+(?:\.(?:html|php))?)?)(?:\{(\w+)\})?/', $routeJson->route, $matches)) === 0) {
                 throw new InternalServerErrorException("Route was misformed : $routeJson->route");
             }
-            $method= isset($action[1]) ? $action[1]:"";
-            $uriParameter= isset($matches[2]) ? $matches[2] :"";
+
+            //getting params for initiate route
+            $action = explode("->", $routeJson->action);
+            $method = isset($action[1]) ? $action[1] : "";
+            $uriParameter = isset($matches[2]) ? $matches[2] : "";
+            $fileToInclude = isset($routeJson->fileToInclude) ? $routeJson->fileToInclude : "";
             $getParameter = array();
             $postParameter = array();
-            if(isset($routeJson->method)) {
-                $getParameter = isset($routeJson->method->GET)?$routeJson->method->GET : array();
-                $postParameter =isset($routeJson->method->POST)?$routeJson->method->POST : array();
+            $methodHttp = "GET";
+            $permission = isset($routeJson->permission) ? $routeJson->permission : array();
+
+            if(isset($routeJson->method) && is_array($routeJson->method) && isset($routeJson->method->GET)){
+                $getParameter =  $routeJson->method->GET ;
             }
-            $this->_routes[$matches[0]] = new Route($routeJson->fileToInclude,$action[0],$method
-               ,$routeJson->permission,$uriParameter,$getParameter,$postParameter);
+            if(isset($routeJson->method) && is_array($routeJson->method) && isset($routeJson->method->POST)){
+                $postParameter = $routeJson->method->POST ;
+                $methodHttp = "POST";
+            }
+            if(isset($routeJson->method) && is_string($routeJson->method)){
+                $methodHttp = $routeJson->method;
+            }
+
+
+
+            //initiate route
+            $this->_routes[] = new Route($matches[0],$fileToInclude, $action[0], $method
+                , $permission, $uriParameter, $methodHttp, $getParameter, $postParameter);
         }
     }
 
     /**
      * Function for using the route corresponding to conf entry
-     **/ 
-    public function routeTo()
-    {
-        $routeQueried = explode("?",$_SERVER['REQUEST_URI']);
-        $routeIndex = array_search($routeQueried[0],array_keys($this->_routes));
-        $routeObject = array_values($this->_routes)[$routeIndex];
-        if ($routeIndex === false || is_null($routeObject) || !$routeObject instanceof Route) {
+     * */
+    public function routeTo() {
+        //find route in array routes
+        $routeObject = array_shift(array_filter($this->_routes,array($this,"compare")));
+        $routeQueried = explode("?", $_SERVER['REQUEST_URI']);
+
+        //if not found throw exception
+        if (is_null($routeObject) || !$routeObject instanceof Route) {
             throw new NotFoundException("Failed to find resource");
         } else {
-            $uriParameter = isset($routeQueried[1])? $routeQueried[1] : "";
+            //otherwise called method build of the route
+            $uriParameter = isset($routeQueried[1]) ? $routeQueried[1] : "";
             $routeObject->build($uriParameter);
         }
     }
+
+    /**
+     * function to see if a route is equal to an uri and its http method
+     * @param Route $route given route to check
+     * @return boolean check whether the route given is equals to the uri requested or not
+     */
+    private function compare($route){
+        $method = $_SERVER['REQUEST_METHOD'];
+        $routeQueried = explode("?", $_SERVER['REQUEST_URI']);
+        return $route->equalsRoute($method, $routeQueried[0]);
+    }
+
 }
