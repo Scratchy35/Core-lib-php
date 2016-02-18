@@ -8,16 +8,22 @@
 $loader = require __DIR__ . '/vendor/autoload.php';
 use Tools\Router\Router;
 use Tools\HttpErrorException\HttpErrorException;
+use Tools\Authentication\Implementation\AuthenticationImpl;
 
-//TODO: Authentification ici
+$authentication = AuthenticationImpl::_getInstance();
+
+try {
+    $authentication->authenticate();
+}catch(HttpErrorException $httpError){
+    http_response_code($httpError->getErrorCode());
+    throw $httpError;
+}
+
 
 $router = Router::_getInstance();
-try
-{
+try {
     $router->routeTo();
-}
-catch (HttpErrorException $httpError)
-{
+} catch (HttpErrorException $httpError) {
     http_response_code($httpError->getErrorCode());
     //error_log(implode('\n',$httpError->getTrace()));
     throw $httpError;
