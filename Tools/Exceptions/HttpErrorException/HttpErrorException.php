@@ -6,7 +6,7 @@
  * Time: 17:15
  */
 
-namespace Tools\HttpErrorException;
+namespace Tools\Exceptions\HttpErrorException;
 
 abstract class HttpErrorException extends \Exception
 {
@@ -26,9 +26,14 @@ abstract class HttpErrorException extends \Exception
         $this->changeCodeError();
     }
 
-    protected function changeCodeError()
+    public function changeCodeError()
     {
-        http_response_code($this->errorCode);
+        if(function_exists('http_response_code')){
+            http_response_code($this->errorCode);
+        }
+        else{
+            header("HTTP/1.0 $this->errorCode");
+        }
 
     }
 }

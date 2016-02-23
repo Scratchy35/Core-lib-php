@@ -6,14 +6,15 @@
  * Time: 17:43
  */
 
-namespace Tools\HttpErrorException;
+namespace Tools\Exceptions\HttpErrorException;
 
 
-final class UnauthorizedException extends HttpErrorException
+final class ForbiddenException extends HttpErrorException
 {
+
     public function __construct($message = "", $code = 0, Exception $previous = null)
     {
-        $this->errorCode =  401;
+        $this->errorCode = 403;
         parent::__construct($message,$code,$previous);
     }
 }

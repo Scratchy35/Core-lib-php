@@ -6,7 +6,7 @@
  * Time: 17:42
  */
 
-namespace Tools\HttpErrorException;
+namespace Tools\Exceptions\HttpErrorException;
 
 
 final class NotFoundException extends HttpErrorException
