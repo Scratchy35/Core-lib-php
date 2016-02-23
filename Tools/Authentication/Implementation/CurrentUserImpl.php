@@ -6,10 +6,18 @@
  * Time: 11:28
  */
 
+
 namespace Tools\Authentication\Implementation;
 
-use Tools\Authentication\Interfaces\ICurrentUser;
 
+use Tools\Authentication\Interfaces\ICurrentUser;
+use Tools\Authentication\Entity\Groupes;
+use Tools\Authentication\Entity\Utilisateurs;
+use Tools\Orm\FactoryConnection;
+use Tools\Orm\db\Db;
+use Tools\Orm\orm\Orm;
+use Tools\Orm\pdo\PdoCustom;
+use Tools\Exceptions\AuthenticationException\UserDontExistException;
 
 class CurrentUserImpl implements ICurrentUser
 {
@@ -49,7 +57,10 @@ class CurrentUserImpl implements ICurrentUser
      */
     public function getPermissions()
     {
-        // TODO: Implement getPermissions() method.
+        if(is_null($this->permissions)){
+            $this->permissions = $this->getGrpPermission();
+        }
+        return $this->permissions;
     }
 
     /**
@@ -76,11 +87,10 @@ class CurrentUserImpl implements ICurrentUser
         $this->trigramme = $trigramme;
     }
 
-    public function setPermissions($permissions)
-    {
-        // TODO: Implement setPermissions() method.
-    }
-
+    /**
+     * 
+     * @return CurrentUserImpl
+     */
     public static function _getInstance()
     {
         if (is_null(self::$_instance)) {
@@ -93,6 +103,18 @@ class CurrentUserImpl implements ICurrentUser
 
     private function __construct()
     {
+    }
+    
+    private function getGrpPermission(){
+        $pdo = FactoryConnection::getPdo("IGUAZU-BACKOFFICE");
+        $db = new Db($pdo);
+        Orm::setDataSource($db);
+        $user = Utilisateurs::findOneByTRIGRAMME($this->trigramme);
+        if(!isset($user)){
+            throw new UserDontExistException();
+        }
+        $mask = $user->getGroupes()->getMASQUE_BINAIRE();
+        return $mask;
     }
 
 }

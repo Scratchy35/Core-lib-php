@@ -21,13 +21,6 @@ interface ICurrentUser
      */
     public function getLogin();
 
-
-    /**
-     * @param $permissions
-     * @return string
-     */
-    public function setPermissions($permissions);
-
     /**
      * @param string $login
      */
