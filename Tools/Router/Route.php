@@ -3,10 +3,12 @@
 namespace Tools\Router;
 
 use Tools\Authentication\Implementation\CurrentUserImpl;
-use Tools\HttpErrorException\ForbiddenException;
-use Tools\HttpErrorException\HttpErrorException;
-use Tools\HttpErrorException\UnauthorizedException;
-use Tools\HttpErrorException\InternalServerErrorException;
+use Tools\Authentication\Implementation\PermissionsMgt;
+use Tools\Exceptions\HttpErrorException\ForbiddenException;
+use Tools\Exceptions\HttpErrorException\HttpErrorException;
+use Tools\Exceptions\HttpErrorException\UnauthorizedException;
+use Tools\Exceptions\HttpErrorException\InternalServerErrorException;
+
 
 
 /**
@@ -17,7 +19,7 @@ use Tools\HttpErrorException\InternalServerErrorException;
  */
 final class Route
 {
-
+    
     /**
      *
      * @var string uri of the route
@@ -66,7 +68,7 @@ final class Route
      * @var bool boolean to check if input have to be secured
      */
     private $_securedInput;
-
+    
 
     /**
      * Route constructor.
@@ -104,10 +106,8 @@ final class Route
     public function build($uriParameter)
     {
         //permission test
-        try {
-            $this->isPermitted();
-        } catch (HttpErrorException $authorizationException) {
-            throw $authorizationException;
+        if(!$this->isPermitted()){
+            throw new ForbiddenException("The user is not permitted to acces this ressource $this->_uri");
         }
         if (!empty($this->_classToInclude)) {
             //if classToInclude is defined, call the method
@@ -126,17 +126,13 @@ final class Route
 
     }
 
-    /**
-     * @throws ForbiddenException
-     * @throws UnauthorizedException
-     */
+
     private function isPermitted()
     {
         $currentUser = CurrentUserImpl::_getInstance();
-//        if((int)$currentUser->getPermissions() & ){
-//
-//        }
-        return true;
+        $userMask  = $currentUser->getPermissions();
+        $permissionMgt = PermissionsMgt::getInstance();
+        return $permissionMgt->comparePermission($userMask,$this->_permission);
     }
 
     /**
@@ -170,10 +166,11 @@ final class Route
         //invoke method
         $controllerMethodReflection->invokeArgs($controller, $parameterFunc);
     }
-
+    
     public function equalsRoute($method,$url){
-        return $method == $this->_methodHttp && $url == $this->_uri
-        && array_keys($_GET) == $this->_getParameterName && array_keys($_POST) == $this->_postParameterName;
+        return $method == $this->_methodHttp && $url == $this->_uri 
+                && array_keys($_GET) == $this->_getParameterName ;
+                //&& array_keys($_POST) == $this->_postParameterName;
     }
 }
 

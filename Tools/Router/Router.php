@@ -2,8 +2,8 @@
 
 namespace Tools\Router;
 
-use Tools\HttpErrorException\NotFoundException;
-use Tools\HttpErrorException\InternalServerErrorException;
+use Tools\Exceptions\HttpErrorException\NotFoundException;
+use Tools\Exceptions\HttpErrorException\InternalServerErrorException;
 
 /**
  * Created by PhpStorm.
@@ -50,7 +50,7 @@ final class Router {
         //iterate over routes in json conf
         foreach ($confObject as $routeJson) {
             //throw exception if url doesn't match regexp
-            if ((preg_match('/\/((?:\w+\/)*(?:\w+(?:\.(?:html|php))?)?)(?:\{(\w+)\})?/', $routeJson->route, $matches)) === 0) {
+            if ((preg_match('/\/((?:[\w-]+\/)*(?:[\w-]+(?:\.(?:html|php))?)?)(?:\{(\w+)\})?/', $routeJson->route, $matches)) === 0) {
                 throw new InternalServerErrorException("Route was misformed : $routeJson->route");
             }
 
@@ -65,29 +65,29 @@ final class Router {
             $permission = isset($routeJson->permission) ? $routeJson->permission : array();
 
             //test if there is some get parameter declare in route
-            if(isset($routeJson->method) && is_object($routeJson->method)
-                && isset($routeJson->method->GET) && is_array($routeJson->method->GET)){
+            if(isset($routeJson->method) && is_object($routeJson->method) 
+                    && isset($routeJson->method->GET) && is_array($routeJson->method->GET)){
                 $getParameter =  $routeJson->method->GET ;
             }
-
+            
             //test if there is some post parameter declare in route, if some post parameter is found
             // it assumes that the route method is POST
-            if(isset($routeJson->method) && is_object($routeJson->method)
-                && isset($routeJson->method->POST) && is_array($routeJson->method->POST)){
+            if(isset($routeJson->method) && is_object($routeJson->method) 
+                    && isset($routeJson->method->POST) && is_array($routeJson->method->POST)){
                 $postParameter = $routeJson->method->POST ;
                 $methodHttp = "POST";
             }
-
+            
             //test if at least a method is declare in route, otherwise the default will be GET
             if(isset($routeJson->method) && is_string($routeJson->method)){
                 $methodHttp = $routeJson->method;
             }
 
-
+            
 
             //initiate route
             $this->_routes[] = new Route($matches[0],$fileToInclude, $action[0], $method
-                , $permission, $uriParameter, $methodHttp, $getParameter, $postParameter);
+                    , $permission, $uriParameter, $methodHttp, $getParameter, $postParameter);
         }
     }
 
@@ -98,7 +98,7 @@ final class Router {
         //find route in array routes
         $routeObject = array_shift(array_filter($this->_routes,array($this,"compare")));
         $routeQueried = explode("?", $_SERVER['REQUEST_URI']);
-
+        
         //if not found throw exception
         if (is_null($routeObject) || !$routeObject instanceof Route) {
             throw new NotFoundException("Failed to find resource");
@@ -108,9 +108,9 @@ final class Router {
             $routeObject->build($uriParameter);
         }
     }
-
+    
     /**
-     * function to see if a route is equal to an url and a method
+     * function to see if a route is equal to an url and a method 
      * @param Route $route
      */
     private function compare($route){
