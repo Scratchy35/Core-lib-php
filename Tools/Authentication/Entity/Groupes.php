@@ -16,9 +16,10 @@ class Groupes extends Orm{
     protected $ID_GROUPES;
     protected $NOM;
     protected $MASQUE_BINAIRE;
+    protected $GROUPE_AD;
     
     public function __construct() {
         parent::__construct();
-        $this->addRelation(Orm::ONE_TO_MANY, array('column' => 'ID_GROUPES', 'foreignClass' => 'Utilisateurs', 'foreignColumn' => 'ID_GROUPES'));
+        $this->addRelation(Orm::ONE_TO_MANY, array('column' => 'ID_GROUPES', 'foreignClass' => 'Tools\Authentication\Entity\Utilisateurs', 'foreignColumn' => 'ID_GROUPES'));
     }
 }

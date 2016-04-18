@@ -5,14 +5,13 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-
 namespace Tools\Exceptions\AuthenticationException;
-use Tools\Exceptions\HttpErrorException\ForbiddenException;
+use Tools\Exceptions\HttpErrorException\InternalServerErrorException;
 /**
- * Description of UserDoNotExistException
+ * Description of FailedKerberosAuthent
  *
  * @author CDB
  */
-class UserDontExistException extends ForbiddenException{
-
+class FailedKerberosAuthent extends InternalServerErrorException{
+    //put your code here
 }

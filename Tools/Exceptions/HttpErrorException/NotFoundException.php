@@ -9,7 +9,7 @@
 namespace Tools\Exceptions\HttpErrorException;
 
 
-final class NotFoundException extends HttpErrorException
+class NotFoundException extends HttpErrorException
 {
 
     public function __construct($message = "", $code = 0, Exception $previous = null)

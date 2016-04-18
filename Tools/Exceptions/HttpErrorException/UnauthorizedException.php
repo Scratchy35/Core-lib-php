@@ -9,7 +9,7 @@
 namespace Tools\Exceptions\HttpErrorException;
 
 
-final class UnauthorizedException extends HttpErrorException
+class UnauthorizedException extends HttpErrorException
 {
     public function __construct($message = "", $code = 0, Exception $previous = null)
     {
