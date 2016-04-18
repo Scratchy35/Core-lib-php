@@ -15,7 +15,7 @@ use Tools\MVC\AbstractTemplate;
 class AbstractController {
     
     
-    public function display($template, $params = array()){
+    protected function display($template, $params = array()){
         if(class_exists($template)){
             $classTemplate = new $template($params);
             $classTemplate->build();
@@ -24,5 +24,10 @@ class AbstractController {
         {
             throw new \Exception("Template $template don't exist");
         }
+    }
+    
+    protected function sendJson($json){
+        header("Content-Type : application/json;charset=utf-8");
+        echo json_encode($json);
     }
 }
