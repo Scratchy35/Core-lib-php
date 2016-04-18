@@ -14,6 +14,6 @@
     "twbs/bootstrap": "^3.3"
   },
   "autoload" : {
-    "psr-4" : {"Tools\\":"Tools/","Controller\\":"Controller/","Entity\\":"Entity/","Template\\":"Template/"}
+    "psr-4" : {"Tools\\":"Tools/","Controller\\":"Controller/","Entity\\":"Entity/","Template\\":"Template/","Util\\":"Util/"}
   }
 }
