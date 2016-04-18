@@ -19,7 +19,7 @@ interface DataSourceAdapter {
   /**
    * Retourne un tableau d'objets.
    * @param object $object
-   * @param array $criteria
+   * @param SqlCondition[] $criteria
    * @param array $order
    * @param integer $limit
    * @param integer $offset

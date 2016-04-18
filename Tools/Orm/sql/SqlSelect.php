@@ -72,18 +72,24 @@ class SqlSelect extends SqlAbstract{
     return $this;
   }
 
+  public function where($condition){
+      if($condition != null){
+          $this->where =$condition;
+      }
+      return $this;
+  }
   /**
   * @return SqlSelect
   */
-  public function where($attr, $value)
-  {
-    if(!empty($value))
-    {
-      $this->where[$attr] = $value;
-    }
-
-    return $this;
-  }
+//  public function where($attr, $value)
+//  {
+//    if(!empty($value))
+//    {
+//      $this->where[$attr] = $value;
+//    }
+//
+//    return $this;
+//  }
 
   /**
   * @return SqlSelect
@@ -129,25 +135,28 @@ class SqlSelect extends SqlAbstract{
         $alias .= $this->alias . '.';
       }
 
-      if(count($this->where) > 0)
+      if($this->where != null)
       {
         $str .= ' WHERE ';
-
-        $where = '';
-        foreach($this->where as $attr => $value)
-        {
-          if(!empty($value))
-          {
-            if($where != '')
-            {
-              $where .= ' AND ';
-            }
-
-            $where .= $alias . $attr . '?';
-            $this->parameters[] = $value;
-          }
-        }
-
+        
+        $sqlCondWhere = $this->where;
+        
+        $where = $sqlCondWhere->build();
+        
+        $this->parameters = $sqlCondWhere->getValue();
+//        foreach($this->where as $attr => $value)
+//        {
+//          if(!empty($value))
+//          {
+//            if($where != '')
+//            {
+//              $where .= ' AND ';
+//            }
+//
+//            $where .= $alias . $attr . '?';
+//            $this->parameters[] = $value;
+//          }
+//        }
         $str .= $where;
       }
 
@@ -173,7 +182,7 @@ class SqlSelect extends SqlAbstract{
       {
         //$str .= ' LIMIT ' . $this->limit . ', ' . $this->offset;
       }
-
+      
       $this->request = $str;
     }
   }

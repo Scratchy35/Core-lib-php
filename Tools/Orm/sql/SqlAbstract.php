@@ -30,7 +30,7 @@ abstract class SqlAbstract {
   public function getParameters()
   {
     $this->_build();
-
+    
     return $this->parameters;
   }
 

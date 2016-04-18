@@ -66,7 +66,7 @@ class PdoCustom extends PDO implements DbAdapter {
 
     $statment->execute();
 
-    return $statment->fetchAll(\PdoCustom::FETCH_ASSOC);
+    return $statment->fetchAll(\Pdo::FETCH_ASSOC);
   }
 
 }

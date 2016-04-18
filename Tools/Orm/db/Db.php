@@ -38,19 +38,19 @@ class Db extends Sql implements TransactionAdapter, DataSourceAdapter, CrudAdapt
    * @param array $criteria
    * @return string
    */
-  private function _getWhere(array $criteria) {
-    $result = array();
-
-    foreach ($criteria as $column => $value) {
-      if (strpos($value, '*') !== false) {
-        $result["{$column} LIKE "] = str_replace('*', '%', $value);
-      } else {
-        $result["{$column} = "] = $value;
-      }
-    }
-
-    return $result;
-  }
+//  private function _getWhere(array $criteria) {
+//    $result = array();
+//
+//    foreach ($criteria as $column => $value) {
+//      if (strpos($value, '*') !== false) {
+//        $result["{$column} LIKE "] = str_replace('*', '%', $value);
+//      } else {
+//        $result["{$column} = "] = $value;
+//      }
+//    }
+//
+//    return $result;
+//  }
 
   /**
    * @param string $table_name
@@ -110,20 +110,21 @@ class Db extends Sql implements TransactionAdapter, DataSourceAdapter, CrudAdapt
   /**
    * Retourne un tableau d'objets.
    * @param object $object
-   * @param array $criteria
+   * @param SqlCondition $criteria
    * @param array $order
    * @param integer $limit
    * @param integer $offset
    * @return array
    */
-  public function find($object, $criteria = array(), $order = null, $limit = null, $offset = null) {
+  public function find($object, $criteria = null, $order = null, $limit = null, $offset = null) {
     $table_name = $object::getTableName();
    
     $select = $this->sqlSelect()->from($table_name);
 
-    foreach ($this->_getWhere($criteria) as $where => $value) {
-      $select->where($where, $value);
-    }
+    $select->where($criteria);
+//    foreach ($this->_getWhere($criteria) as $where => $value) {
+//      $select->where($where, $value);
+//    }
 
     if (count($order) > 0) {
       foreach ($order as $col => $sens) {
@@ -135,6 +136,7 @@ class Db extends Sql implements TransactionAdapter, DataSourceAdapter, CrudAdapt
       $select->limit($limit, $offset);
     }
     $stmt = $this->_getDb()->prepare($select->getRequest());
+    
     $stmt->execute($select->getParameters());
     $result = $stmt->fetchAllObjectOfClass($object);
     
@@ -152,9 +154,10 @@ class Db extends Sql implements TransactionAdapter, DataSourceAdapter, CrudAdapt
 
     $select = $this->sqlSelect()->from(array('table_name' => $table_name, 'attr' => array('COUNT(*)')));
 
-    foreach ($this->_getWhere($criteria) as $where => $value) {
-      $select->where($where, $value);
-    }
+    $this->_getWhere($criteria);
+//    foreach ($this->_getWhere($criteria) as $where => $value) {
+//      $select->where($where, $value);
+//    }
 
     $stmt = $this->_getDb()->prepare($select->getRequest());
     $stmt->execute($select->getParameters());
@@ -228,7 +231,7 @@ class Db extends Sql implements TransactionAdapter, DataSourceAdapter, CrudAdapt
 
     $updateData = $data;
     unset($updateData[$primaryKeyColumn]);
-
+    
     foreach ($updateData as $attr => $value) {
       $update->addSet($attr, $value);
     }

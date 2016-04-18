@@ -1,6 +1,9 @@
 <?php
 namespace Tools\Orm;
 use Tools\Orm\pdo\PdoCustom;
+use Tools\Orm\db\Db;
+use Tools\Orm\orm\Orm;
+use Tools\Exceptions\Common\FailedReadConfFileException;
 use Exception;
 
 /**
@@ -15,7 +18,7 @@ class FactoryConnection {
 
     /**
      * Fonction pour ouvrir une connection PDO vers une base de donnée inscrite dans DbConnection.json
-     * @param $bdd string nom de la base de donnée  
+     * @param string $bdd nom de la base de donnée  
      * @return \PdoCustom la connection pdo vers la base de donnée
      * @throws Exception
      */
@@ -41,8 +44,8 @@ class FactoryConnection {
 
     /**
      * Construit la connection pdo avec le nom de base et l'environnement
-     * @param $bdd string nom de la base de donnée
-     * @param $env string environnement dans lequelle on se situe
+     * @param string $bdd nom de la base de donnée
+     * @param string $env environnement dans lequelle on se situe
      * @return \PdoCustom la connection pdo vers la base de donnée
      * @throws Exception
      */
@@ -53,7 +56,7 @@ class FactoryConnection {
             self::$confObject= json_decode($json);
         }
         if (!isset(self::$confObject) || !is_object(self::$confObject)) {
-            throw new Exception("Erreur lors de la lecture du fichier de configuration");
+            throw new FailedReadConfFileException("Erreur lors de la lecture du fichier de configuration");
         }
         if (!isset(self::$confObject->$bdd) || !is_object(self::$confObject->$bdd)) {
             throw new Exception("Erreur, la base de donnée n'a pas d'informations de connection définies");
@@ -63,7 +66,10 @@ class FactoryConnection {
         }
         //on instancie et renvoie la connection PDO 
         $conf = !isset(self::$confObject->$bdd->$env) ? self::$confObject->$bdd->DEFAULT : self::$confObject->$bdd->$env;
-        return new PdoCustom($conf->ConnectionString, $conf->Login, $conf->Password);
+        $pdo = new PdoCustom($conf->ConnectionString, $conf->Login, $conf->Password);
+        $db = new Db($pdo);
+        Orm::setDataSource($db);
+        return $pdo;
     }
 
 }

@@ -1,6 +1,14 @@
 <?php
+
 namespace Tools\Orm\orm;
+
 use Tools\Orm\db\adapter\DataSourceAdapter;
+use Tools\Orm\db\adapter\CrudAdapter;
+
+require "/Tools/Orm/sql/SqlCondition.php";
+
+use Exception;
+
 /*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
@@ -164,9 +172,12 @@ abstract class Orm {
      * @param integer $offset
      * @return array
      */
-    public static function find(array $criteria = array(), array $order = null, $limit = null, $offset = null) {
+    public static function find($criteria = array(), array $order = null, $limit = null, $offset = null) {
+        if(static::getDataSource() == null){
+            throw new Exception("Error, connection is missing, try to initialize ");
+        }
         $result = static::getDataSource()->find(static::_getName(), $criteria, $order, $limit, $offset);
-
+        
         $objects = array();
 
         foreach ($result as $object) {
@@ -181,7 +192,7 @@ abstract class Orm {
      * @param array $criteria
      * @return integer
      */
-    public static function count(array $criteria = array()) {
+    public static function count($criteria = array()) {
         return static::getDataSource()->count(static::_getName(), $criteria);
     }
 
@@ -191,7 +202,8 @@ abstract class Orm {
      * @param array $order
      * @return wOrm
      */
-    public static function findOne(array $criteria = array(), array $order = null) {
+    public static function findOne($criteria = array(), array $order = null) {
+        
         $objects = static::find($criteria, $order, 0, 1);
         return count($objects) == 1 ? $objects[0] : null;
         //return is_object($objects) ? $objects : null;
@@ -201,6 +213,7 @@ abstract class Orm {
      * Checks if the current object is read-only or not.
      */
     private function _validateModifiable() {
+
         if (!($this->_getDataSource() instanceof CrudAdapter)) {
             throw new Exception('Object is read-only.');
         }
@@ -211,7 +224,6 @@ abstract class Orm {
      */
     public function save() {
         $this->_validateModifiable();
-
         if ($this->isNew()) {
             $this->_getDataSource()->create($this);
         } else {
@@ -243,14 +255,45 @@ abstract class Orm {
         if (!preg_match('/^(find|findOne|count)By(\w+)$/', $method, $matches)) {
             throw new \Exception("Call to undefined method {$method}");
         }
-        
-        $criteriaKeys = explode('_And_', preg_replace('/([a-z0-9])([A-Z])/', '$1_$2', $matches[2]));
-        $criteriaKeys = array_map('strtolower', $criteriaKeys);
-        $criteriaValues = array_slice($params, 0, count($criteriaKeys));
-        $criteria = array_combine($criteriaKeys, $criteriaValues);
+
+        //$keys = preg_replace('/([a-z0-9])([A-Z])/', '$1_$2', $matches[2]);
+        //var_dump($keys);
+        $criteriaKeysAnd = explode('_AND_', $matches[2]);
+        $criteriaKeysOr = explode('_OR_', $matches[2]);
+        $criteriaKeysAnd = array_map('strtolower', $criteriaKeysAnd);
+        $criteriaKeysOr = array_map('strtolower', $criteriaKeysOr);
+        if (count($criteriaKeysAnd) > 1) {
+            $criteria = self::getSqlConditionArray($criteriaKeysAnd, $params, 'and');
+        }
+        elseif (count($criteriaKeysOr) > 1) {
+            $criteria = self::getSqlConditionArray($criteriaKeysOr, $params, 'or');
+        } else {
+            $criteria = self::getSqlCondition($matches[2], $params[0]);
+        }
+//        $criteriaValues = array_slice($params, 0, count($criteriaKeysAnd));
+//        $criteria = array_combine($criteriaKeysAnd, $criteriaValues);
+//        var_dump($criteria);
+
 
         $method = $matches[1];
         return static::$method($criteria);
+    }
+
+    private static function getSqlConditionArray($criteria, $values, $op) {
+        $op = "_" . $op;
+        for ($i = 0; $i < count($criteria); $i++) {
+            $arrayCondition[] = self::getSqlCondition($criteria[$i], $values[$i]);
+        }
+        return \SqlCondition::$op($arrayCondition);
+    }
+
+    private static function getSqlCondition($criteria, $value) {
+        if ((strpos($value, '%') !== false)) {
+            $opCond = '_like';
+        } else {
+            $opCond = '_equals';
+        }
+        return \SqlCondition::$opCond($criteria, $value);
     }
 
     /**
@@ -461,15 +504,15 @@ abstract class Orm {
             $left_col = $column;
 
             $right_col = $foreignColumn;
-
-            $relationObjects = $relationClass::find(array($left_col => $this->$column));
+            $sqlCond= \SqlCondition::_equals($left_col, $this->$column);
+            $relationObjects = $relationClass::find( $sqlCond);
             foreach ($relationObjects as $obj) {
-                foreach ($object::find(array($foreignColumn => $obj->$right_col)) as $objToGet) {
+                foreach ($object::find(\SqlCondition::_equals($foreignColumn, $obj->$right_col)) as $objToGet) {
                     array_push($toReturn, $objToGet);
                 }
             }
         } else {
-            
+
             $cpt = 0;
             while (!$found && $cpt < count($this->_dataRelations)) {
                 if ($this->_dataRelations[$cpt]["foreignClass"] == $object) {
@@ -478,7 +521,7 @@ abstract class Orm {
                 $cpt += 1;
             }
             if (!$found) {
-                $toReturn = $object::find(array($foreignColumn => $this->$column));
+                $toReturn = $object::find( \SqlCondition::_equals($foreignColumn, $this->$column));
             } else {
                 $toReturn = $this->_dataRelations[$cpt - 1]["objs"];
             }
@@ -490,6 +533,7 @@ abstract class Orm {
             } else if (count($toReturn) == 0) {
                 return null;
             } else if ($toReturn != null) {
+                
             } else {
                 throw new Exception("Failed to load relation $object, maybe the type of the relation is wrong");
             }
