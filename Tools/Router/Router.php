@@ -4,6 +4,7 @@ namespace Tools\Router;
 
 use Tools\Exceptions\HttpErrorException\NotFoundException;
 use Tools\Exceptions\HttpErrorException\InternalServerErrorException;
+use Tools\Exceptions\Common\FailedReadConfFileException;
 
 /**
  * Created by PhpStorm.
@@ -44,7 +45,7 @@ final class Router {
         $json = file_get_contents(getcwd() . self::PATH_JSON_CONF);
         $confObject = json_decode($json);
         if (is_null($confObject) || !is_array($confObject)) {
-            throw new InternalServerErrorException("The file " . self::PATH_JSON_CONF . " can't be convert, it's a not a valid JSON");
+            throw new FailedReadConfFileException("The file " . self::PATH_JSON_CONF . " can't be convert, it's a not a valid JSON");
         }
 
         //iterate over routes in json conf
@@ -53,7 +54,7 @@ final class Router {
             if ((preg_match('/\/((?:[\w-]+\/)*(?:[\w-]+(?:\.(?:html|php))?)?)(?:\{(\w+)\})?/', $routeJson->route, $matches)) === 0) {
                 throw new InternalServerErrorException("Route was misformed : $routeJson->route");
             }
-
+            
             //getting params for initiate route
             $action = explode("->", $routeJson->action);
             $method = isset($action[1]) ? $action[1] : "";
@@ -98,14 +99,13 @@ final class Router {
         //find route in array routes
         $routeObject = array_shift(array_filter($this->_routes,array($this,"compare")));
         $routeQueried = explode("?", $_SERVER['REQUEST_URI']);
-        
         //if not found throw exception
         if (is_null($routeObject) || !$routeObject instanceof Route) {
-            throw new NotFoundException("Failed to find resource");
+            throw new NotFoundException("Page not Found");
         } else {
             //otherwise called method build of the route
-            $uriParameter = isset($routeQueried[1]) ? $routeQueried[1] : "";
-            $routeObject->build($uriParameter);
+            
+            $routeObject->build($routeQueried[0]);
         }
     }
     

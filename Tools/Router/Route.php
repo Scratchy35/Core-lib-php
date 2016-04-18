@@ -9,22 +9,20 @@ use Tools\Exceptions\HttpErrorException\HttpErrorException;
 use Tools\Exceptions\HttpErrorException\UnauthorizedException;
 use Tools\Exceptions\HttpErrorException\InternalServerErrorException;
 
-
-
 /**
  * Created by PhpStorm.
  * User: Scratchy
  * Date: 24/10/2015
  * Time: 19:53
  */
-final class Route
-{
-    
+final class Route {
+
     /**
      *
      * @var string uri of the route
      */
     private $_uri;
+
     /**
      * @var string path to the file in case of no support of autoloader
      */
@@ -54,6 +52,7 @@ final class Route
      * @var string method use to access to the route
      */
     private $_methodHttp;
+
     /**
      * @var string[] name of parameter GET
      */
@@ -68,24 +67,25 @@ final class Route
      * @var bool boolean to check if input have to be secured
      */
     private $_securedInput;
-    
 
     /**
      * Route constructor.
-     * @param $uri string uri of the route
-     * @param $fileToInclude string file to include in case of not OOP paradigm
-     * @param $classToInclude string class to include
-     * @param $methodToCall string method to call in the class
-     * @param $permission string[] permission for this routes
-     * @param $uriParameterName string uri parameter for the route
-     * @param $methodHttp string method http use to request the route , by default GET
-     * @param $getParameterName array get parameter for the route
-     * @param $postParameterName array post parameter for the route
-     * @param $securedInput bool boolean to check if input have to be secured
+     * @param string $uri uri of the route
+     * @param string $fileToInclude file to include in case of not OOP paradigm
+     * @param string $classToInclude class to include
+     * @param string $methodToCall method to call in the class
+     * @param string[] $permission permission for this routes
+     * @param string $uriParameterName uri parameter for the route
+     * @param string $methodHttp method http use to request the route , by default GET
+     * @param array $getParameterName get parameter for the route
+     * @param array $postParameterName post parameter for the route
+     * @param boolean $securedInput boolean to check if input have to be secured
      */
-    public function __construct($uri,$fileToInclude, $classToInclude, $methodToCall, $permission, $uriParameterName = "",$methodHttp = "GET", $getParameterName = array(), $postParameterName = array(), $securedInput = false)
-    {
-        $this->_uri = $uri;
+    public function __construct($uri, $fileToInclude, $classToInclude, $methodToCall, $permission, $uriParameterName = "", $methodHttp = "GET", $getParameterName = array(), $postParameterName = array(), $securedInput = false) {
+        $regex = str_replace("{".$uriParameterName."}", "((?:\w|\ )+)?", $uri);
+        $regex = str_replace("/", "\/", $regex);
+        $regex = "/^$regex$/";
+        $this->_uri = $regex;
         $this->_fileToInclude = $fileToInclude;
         $this->_classToInclude = $classToInclude;
         $this->_methodToCall = $methodToCall;
@@ -103,11 +103,10 @@ final class Route
      * @throws HttpErrorException
      * @throws \Exception
      */
-    public function build($uriParameter)
-    {
+    public function build($uriParameter) {
         //permission test
         if(!$this->isPermitted()){
-            throw new ForbiddenException("The user is not permitted to acces this ressource $this->_uri");
+            throw new ForbiddenException("The user is not permitted to access this ressource");
         }
         if (!empty($this->_classToInclude)) {
             //if classToInclude is defined, call the method
@@ -123,25 +122,22 @@ final class Route
             //include file if no class is defined
             include $this->_fileToInclude;
         }
-
     }
 
-
-    private function isPermitted()
-    {
-        $currentUser = CurrentUserImpl::_getInstance();
-        $userMask  = $currentUser->getPermissions();
-        $permissionMgt = PermissionsMgt::getInstance();
-        return $permissionMgt->comparePermission($userMask,$this->_permission);
+    private function isPermitted() {
+        return  PermissionsMgt::getInstance()->canAccess($this->_permission)  ;
     }
 
     /**
      * Call of the method
      * @param $uriParameter
      */
-    private function callMethod($uriParameter = null)
-    {
-        $controllerMethodReflection = new \ReflectionMethod($this->_classToInclude, $this->_methodToCall);
+    private function callMethod($uriParameter = null) {
+        try {
+            $controllerMethodReflection = new \ReflectionMethod($this->_classToInclude, $this->_methodToCall);
+        } catch (\ReflectionException $rex) {
+            throw new InternalServerErrorException("No method $this->_methodToCall in class $this->_classToInclude");
+        }
         $parameterFunc = array();
         $parameters = $controllerMethodReflection->getParameters();
 
@@ -149,15 +145,17 @@ final class Route
         foreach ($parameters as $parameter) {
             //looking for uri,get,post parameter name in the route,
             //if found then adding them to array parameterFunc
-
             if ($parameter->name == $this->_uriParameterName) {
-                $parameterFunc[] = $uriParameter;
+                preg_match($this->_uri, $uriParameter,$match);
+                if(isset($match[1])){
+                    $parameterFunc[] = $match[1];
+                }
             }
             if (in_array($parameter->name, $this->_getParameterName)) {
                 $parameterFunc[] = $_GET[$parameter->name];
             }
             if (in_array($parameter->name, $this->_postParameterName)) {
-                $parameterFunc[] = $_POST[$parameter->name];
+                $parameterFunc[] = isset($_POST[$parameter->name]) ? $_POST[$parameter->name] : null;
             }
         }
         //Instantiate class
@@ -166,12 +164,11 @@ final class Route
         //invoke method
         $controllerMethodReflection->invokeArgs($controller, $parameterFunc);
     }
-    
-    public function equalsRoute($method,$url){
-        return $method == $this->_methodHttp && $url == $this->_uri 
-                && array_keys($_GET) == $this->_getParameterName ;
-                //&& array_keys($_POST) == $this->_postParameterName;
+
+    public function equalsRoute($method, $url) {
+        return $method == $this->_methodHttp 
+                && preg_match($this->_uri, $url)
+                && array_keys($_GET) == $this->_getParameterName;
     }
+
 }
-
-
